@@ -15,7 +15,7 @@ const io = require('socket.io')(server, {
 });
 
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: 'https://merry-gnome-3d7277.netlify.app',
   methods: ['GET', 'PATCH','PUT'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true, // Allow credentials
