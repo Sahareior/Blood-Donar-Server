@@ -130,6 +130,60 @@ async function startServer() {
       }
     });
 
+    app.get('/user-conversations/:userId', async (req, res) => {
+      const { userId } = req.params;
+    
+      try {
+        // Fetch all conversations where the user is a member
+        const userConversations = await conversationsCollection.find({
+          members: { $in: [userId] },
+        }).toArray();
+    
+        if (userConversations.length > 0) {
+          // Fetch display names and photoURLs for the other members of each conversation
+          const conversationWithUsernames = await Promise.all(
+            userConversations.map(async (conversation) => {
+              // Fetch details for all members except the requesting user
+              const memberDetails = await Promise.all(
+                conversation.members
+                  .filter(memberId => memberId !== userId) // Exclude the requesting user
+                  .map(async (memberId) => {
+                    const user = await userCollections.findOne(
+                      { uid: memberId },
+                      { projection: { displayName: 1, photoURL: 1 } } // Include displayName and photoURL
+                    );
+                    return {
+                      uid: memberId,
+                      displayName: user ? user.displayName : 'Unknown User',
+                      photoURL: user ? user.photoURL : null
+                    };
+                  })
+              );
+    
+              return {
+                _id: conversation._id,
+                participants: memberDetails, // Include details of all participants except the requesting user
+                createdAt: conversation.createdAt,
+              };
+            })
+          );
+    
+          res.status(200).json(conversationWithUsernames);
+        } else {
+          res.status(404).json({ message: 'No conversations found for this user' });
+        }
+      } catch (err) {
+        console.error('Error fetching user conversations:', err);
+        res.status(500).send('Error fetching user conversations.');
+      }
+    });
+    
+    
+    
+    
+    
+    
+
     app.post('/messages', async (req, res) => {
       try {
         const { conversationId, senderId, content } = req.body;
@@ -169,7 +223,7 @@ async function startServer() {
     let users = [];
 
     const addUser = (userData, socketId) => {
-      if (!users.some(user => user.uid === userData.uid)) {
+      if (!users.some(user => user?.uid === userData?.uid)) {
         users.push({ ...userData, socketId });
       }
       console.log("Users Array:", users);
@@ -181,7 +235,7 @@ async function startServer() {
     };
 
     const getUser = (userId) => {
-      const user = users.find(user => user.uid === userId);
+      const user = users.find(user => user?.uid === userId);
       if (!user) {
         console.error(`User with ID ${userId} not found`);
       }
