@@ -25,7 +25,10 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-const uri = "mongodb://localhost:27017";
+// bloodDonation EnqugbpoMUCPqBVJ 
+
+// const uri = "mongodb://localhost:27017";
+const uri ="mongodb+srv://bloodDonation:EnqugbpoMUCPqBVJ@cluster0.j0rll9s.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 async function startServer() {
