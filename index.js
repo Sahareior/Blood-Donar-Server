@@ -16,7 +16,7 @@ const io = require('socket.io')(server, {
 
 const corsOptions = {
   origin: 'http://localhost:5173',
-  methods: ['GET', 'PATCH'],
+  methods: ['GET', 'PATCH','PUT'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true, // Allow credentials
 };
@@ -66,6 +66,77 @@ async function startServer() {
         res.status(500).json({ message: 'Error creating/updating user' });
       }
     });
+
+    app.get('/users/:uid', async (req, res) => {
+      const { uid } = req.params;
+      try {
+        const user = await userCollections.findOne(
+          { uid: uid },  // Ensure uid field matches correctly
+          {
+            projection: {
+              displayName: 1,
+              email: 1,
+              phoneNumber: 1,
+              bloodGroup: 1,
+              state: 1,
+              city: 1,
+              zipCode: 1
+            }
+          }
+        );
+    
+        if (user) {
+          res.status(200).json(user);  // Send user details to frontend
+        } else {
+          res.status(404).json({ message: 'User not found' });
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).send('Error fetching user');
+      }
+    });
+    
+    app.put('/users/:uid', async (req, res) => {
+      const { uid } = req.params;
+     
+      const { displayName, email, phoneNumber, bloodGroup, state, city, zipCode } = req.body;
+    
+      // Log received data for debugging
+   
+    
+      try {
+        const result = await userCollections.updateOne(
+          { uid: uid },
+          {
+            $set: {
+              displayName,
+              email,
+              phoneNumber,
+              bloodGroup,
+              state,
+              city,
+              zipCode,
+            },
+          }
+        );
+    
+        // Log the result for debugging
+        console.log('Update result:', result);
+    
+        if (result.matchedCount === 0) {
+          res.status(404).json({ message: 'User not found' });
+        } else if (result.modifiedCount > 0) {
+          res.status(200).json({ message: 'User updated successfully' });
+        } else {
+          res.status(200).json({ message: 'No changes made' });
+        }
+      } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).send('Error updating user');
+      }
+    });
+    
+    
 
     app.get('/users', async (req, res) => {
       const user = await userCollections.find().toArray();
@@ -226,7 +297,7 @@ async function startServer() {
       if (!users.some(user => user?.uid === userData?.uid)) {
         users.push({ ...userData, socketId });
       }
-      console.log("Users Array:", users);
+      
     }
     
 
