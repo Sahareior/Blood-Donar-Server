@@ -25,10 +25,10 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// bloodDonation EnqugbpoMUCPqBVJ 
-
 // const uri = "mongodb://localhost:27017";
+
 const uri ="mongodb+srv://bloodDonation:EnqugbpoMUCPqBVJ@cluster0.j0rll9s.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 async function startServer() {
@@ -101,8 +101,8 @@ async function startServer() {
     
     app.put('/users/:uid', async (req, res) => {
       const { uid } = req.params;
-     
-      const { displayName, email, phoneNumber, bloodGroup, state, city, zipCode } = req.body;
+   
+      const { displayName, email, phoneNumber, bloodGroup, state, city, zipCode,donor } = req.body;
     
       // Log received data for debugging
    
@@ -119,12 +119,12 @@ async function startServer() {
               state,
               city,
               zipCode,
+              donor,
             },
           }
         );
     
         // Log the result for debugging
-        console.log('Update result:', result);
     
         if (result.matchedCount === 0) {
           res.status(404).json({ message: 'User not found' });
@@ -241,7 +241,7 @@ async function startServer() {
               };
             })
           );
-    
+
           res.status(200).json(conversationWithUsernames);
         } else {
           res.status(404).json({ message: 'No conversations found for this user' });
