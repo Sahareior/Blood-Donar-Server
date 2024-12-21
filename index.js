@@ -341,6 +341,12 @@ async function startServer() {
         removeUser(socket.id);
         io.emit('getUsers', users);
       });
+// reconnect
+       socket.on('reconnect', () => {
+    console.log('user reconnected');
+    // Optional: Check if the user exists and re-emit necessary data
+    io.emit('getUsers', users);
+  });
     });
 
   } catch (error) {
